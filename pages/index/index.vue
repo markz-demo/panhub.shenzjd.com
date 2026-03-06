@@ -195,13 +195,15 @@ const initialVisible = 3;
 const expandedSet = ref<Set<string>>(new Set());
 
 // 使用搜索 composable
-const { 
-  state: searchState, 
-  performSearch, 
-  resetSearch, 
-  copyLink, 
-  pauseSearch, 
-  continueSearch 
+const {
+  state: searchState,
+  performSearch,
+  resetSearch,
+  copyLink,
+  pauseSearch,
+  continueSearch,
+  hasResults,
+  merged
 } = useSearch();
 const { settings } = useSettings();
 
@@ -258,7 +260,7 @@ const groupedResults = computed(() => {
   const source =
     filterPlatform.value === "all"
       ? searchState.value.merged
-      : { [filterPlatform.value]: merged[filterPlatform.value] || [] };
+      : { [filterPlatform.value]: searchState.value.merged[filterPlatform.value] || [] };
   for (const type of Object.keys(source)) {
     if (!source[type]?.length) continue;
     list.push({ type, items: source[type] || [] });
