@@ -8,6 +8,7 @@ import type {
   SearchResult,
 } from "../types/models";
 import { PluginManager, type AsyncSearchPlugin } from "../plugins/manager";
+import { PluginHealthChecker, createPluginHealthChecker } from "../plugins/pluginHealth";
 
 export interface SearchServiceOptions {
   priorityChannels: string[];
@@ -22,6 +23,7 @@ export class SearchService {
   private options: SearchServiceOptions;
   private pluginManager: PluginManager;
   private cache: UnifiedCache;
+  private healthChecker: PluginHealthChecker;
 
   constructor(options: SearchServiceOptions, pluginManager: PluginManager) {
     this.options = options;
@@ -33,7 +35,8 @@ export class SearchService {
       },
       "search"
     );
-    this.pluginManager = pluginManager;
+
+    this.healthChecker = createPluginHealthChecker();    this.pluginManager = pluginManager;
 
   getPluginManager() {
     return this.pluginManager;
@@ -256,12 +259,18 @@ export class SearchService {
     }
 
     const allPlugins = this.pluginManager.getPlugins();
+    
+    // 过滤掉不健康的插件（熔断器开启的插件）
+    const healthyPlugins = allPlugins.filter((p) => 
+      this.healthChecker.isHealthy(p.name())
+    );
+    
     let available: AsyncSearchPlugin[] = [];
     if (plugins && plugins.length > 0 && plugins.some((p) => !!p)) {
       const wanted = new Set(plugins.map((p) => p.toLowerCase()));
-      available = allPlugins.filter((p) => wanted.has(p.name().toLowerCase()));
+      available = healthyPlugins.filter((p) => wanted.has(p.name().toLowerCase()));
     } else {
-      available = allPlugins;
+      available = healthyPlugins;
     }
 
     const requestedTimeout = Number((ext as any)?.__plugin_timeout_ms) || 0;
@@ -277,12 +286,24 @@ export class SearchService {
       p.setMainCacheKey(cacheKey);
       p.setCurrentKeyword(keyword);
 
+      const startTime = Date.now();
+      const pluginName = p.name();
+
       // 主搜索
       let results = await this.withTimeout<SearchResult[]>(
         p.search(keyword, ext),
         timeoutMs,
         []
       );
+
+      // 记录健康状态
+      const responseTime = Date.now() - startTime;
+      if (results && results.length > 0) {
+        this.healthChecker.recordSuccess(pluginName, responseTime);
+      } else {
+        // 超时或无结果记录为失败
+        this.healthChecker.recordFailure(pluginName);
+      }
 
       // 短关键词兜底逻辑
       if (
@@ -427,6 +448,18 @@ export class SearchService {
       this.cache.clearNamespace(namespace);
     } else {
       this.cache.clearAll();
+    }
+  }
+
+  getPluginHealthStatus() {
+    return this.healthChecker.getAllStatus();
+  }
+
+  resetPluginHealth(pluginName?: string) {
+    if (pluginName) {
+      this.healthChecker.reset(pluginName);
+    } else {
+      this.healthChecker.resetAll();
     }
   }
 }
