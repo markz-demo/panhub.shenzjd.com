@@ -1,4 +1,4 @@
-import { defineEventHandler, getQuery, createError } from "h3";
+import { defineEventHandler, getQuery, createError, setHeader } from "h3";
 import { ofetch } from "ofetch";
 
 const ALLOWED_HOSTS = /^img[1-9]\.doubanio\.com$/;
@@ -23,14 +23,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: "Host not allowed" });
   }
 
+  // 使用更真实的请求头
   const resp = await ofetch<ArrayBuffer>(url, {
     responseType: "arrayBuffer",
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      Referer: "https://movie.douban.com/",
-      Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+      "Referer": "https://movie.douban.com/",
+      "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
     },
-    timeout: 8000,
+    timeout: 10000,
+    retry: 2, // ofetch 内置重试
   });
 
   const buffer = Buffer.from(resp);
