@@ -14,6 +14,11 @@ export function extractMergedFromResponse(
   // 1. 标准 merged_by_type
   if (data.merged_by_type && typeof data.merged_by_type === "object") {
     const m = data.merged_by_type as MergedLinks;
+    Object.keys(m).forEach(k => {
+      m[k]?.forEach((l: MergedLink) => {
+        l.source = l.source || source
+      })
+    })
     if (Object.keys(m).length > 0) return m;
   }
   // 2. results: SearchResult[] 或 MergedLink[]，需展开并分组
