@@ -7,7 +7,8 @@ import type {
 
 /** 从 API 响应中提取 MergedLinks，兼容 merged_by_type、results 及扁平数组等多种格式 */
 export function extractMergedFromResponse(
-  data: SearchResponse | Record<string, any> | undefined
+  data: SearchResponse | Record<string, any> | undefined,
+  source: string,
 ): MergedLinks {
   if (!data) return {};
   // 1. 标准 merged_by_type
@@ -34,7 +35,7 @@ export function extractMergedFromResponse(
             password: link.password || "",
             note,
             datetime: dt,
-            source: rAny.channel ? `tg:${rAny.channel}` : undefined,
+            source: (rAny.channel ? `tg:${rAny.channel}` : rAny.source) || source,
           });
         }
       } else if (rAny.url) {
@@ -46,7 +47,7 @@ export function extractMergedFromResponse(
           password: rAny.password || "",
           note: rAny.note || "",
           datetime: rAny.datetime || "",
-          source: rAny.source,
+          source: (rAny.channel ? `tg:${rAny.channel}` : rAny.source) || source,
         });
       }
     }
@@ -65,7 +66,7 @@ export function extractMergedFromResponse(
           password: item.password || "",
           note: item.note || "",
           datetime: item.datetime || "",
-          source: item.source,
+          source: (item.channel ? `tg:${item.channel}` : item.source) || source,
         });
       }
     }

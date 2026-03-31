@@ -86,7 +86,7 @@ export function useSearch() {
     for (const controller of activeControllers) {
       try {
         controller.abort();
-      } catch {}
+      } catch { }
     }
     activeControllers.length = 0;
   }
@@ -148,7 +148,7 @@ export function useSearch() {
           `${apiBase}/search?${q.toString()}`,
           { signal: ac.signal, credentials: "include" } as any
         );
-        return extractMergedFromResponse(response.data);
+        return extractMergedFromResponse(response.data, params.src + '-' + (params.plugins || params.channels));
       } catch (error: any) {
         if (error?.name === "AbortError") return {};
         if (error?.statusCode === 401) onAuthRequired?.();
@@ -321,7 +321,7 @@ export function useSearch() {
     try {
       // 并行搜索 - 每个源独立请求，实时更新
       await performParallelSearch(options, mySeq);
-      
+
       if (mySeq !== searchSeq) return;
     } catch (error: any) {
       setError(error?.data?.message || error?.message || "请求失败");
