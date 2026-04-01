@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: "zh-CN" },
-      title: "PanHub · 全网最全的网盘搜索",
+      title: "mPanHub",
       titleTemplate: "%s · PanHub",
       meta: [
         {

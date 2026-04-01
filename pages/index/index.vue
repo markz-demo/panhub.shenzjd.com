@@ -6,19 +6,19 @@
       <header class="hero">
         <div class="hero-accent" aria-hidden="true" />
         <div class="hero-content">
-          <div class="hero-badge">PanHub 搜索聚合引擎</div>
+          <div class="hero-badge">mPanHub</div>
           <h1 class="hero-title">
             <span class="hero-title-line">一键检索</span>
             <span class="hero-title-line hero-title-line--accent">全网网盘资源</span>
           </h1>
-          <p class="hero-description">
+          <!-- <p class="hero-description">
             聚合阿里云盘、夸克、百度网盘、115、迅雷等平台 · 快速、直达、少打扰
-          </p>
-          <ul class="hero-features" role="list">
+          </p> -->
+          <!-- <ul class="hero-features" role="list">
             <li class="hero-feature">实时聚合</li>
             <li class="hero-feature">多平台覆盖</li>
             <li class="hero-feature">结果去重</li>
-          </ul>
+          </ul> -->
         </div>
         <div class="hero-shape" aria-hidden="true" />
       </header>
@@ -28,15 +28,8 @@
     </div>
 
     <!-- 搜索框 -->
-    <SearchBox
-      v-model="kw"
-      :loading="searchState.loading"
-      :paused="searchState.paused"
-      :searched="searched"
-      :placeholder="placeholder"
-      @search="onSearch"
-      @reset="fullReset"
-      @pause="pauseSearch"
+    <SearchBox v-model="kw" :loading="searchState.loading" :paused="searchState.paused" :searched="searched"
+      :placeholder="placeholder" @search="onSearch" @reset="fullReset" @pause="pauseSearch"
       @continue="handleContinueSearch" />
 
     <!-- 统计和过滤器 -->
@@ -63,15 +56,10 @@
 
         <!-- 平台过滤器 -->
         <div class="platform-filters" v-if="hasResults">
-          <button
-            :class="['filter-pill', { active: filterPlatform === 'all' }]"
-            @click="filterPlatform = 'all'">
+          <button :class="['filter-pill', { active: filterPlatform === 'all' }]" @click="filterPlatform = 'all'">
             全部
           </button>
-          <button
-            v-for="p in platforms"
-            :key="p"
-            :class="['filter-pill', { active: filterPlatform === p }]"
+          <button v-for="p in platforms" :key="p" :class="['filter-pill', { active: filterPlatform === p }]"
             @click="filterPlatform = p">
             {{ platformName(p) }}
           </button>
@@ -93,23 +81,16 @@
     <!-- 搜索结果 -->
     <section v-if="hasResults" class="results-section">
       <div class="results-grid">
-        <ResultGroup
-          v-for="group in groupedResults"
-          :key="group.type"
-          :title="platformName(group.type)"
-          :color="platformColor(group.type)"
-          :icon="platformIcon(group.type)"
-          :items="visibleSorted(group.items)"
-          :expanded="filterPlatform !== 'all' || isExpanded(group.type)"
-          :initial-visible="initialVisible"
-          :can-toggle-collapse="false"
-          @toggle="handleToggle(group.type)"
-          @copy="copyLink" />
+        <ResultGroup v-for="group in groupedResults" :key="group.type" :title="platformName(group.type)"
+          :color="platformColor(group.type)" :icon="platformIcon(group.type)" :items="visibleSorted(group.items)"
+          :expanded="filterPlatform !== 'all' || isExpanded(group.type)" :initial-visible="initialVisible"
+          :can-toggle-collapse="false" @toggle="handleToggle(group.type)" @copy="copyLink" />
       </div>
     </section>
 
     <!-- 空状态：仅当搜索完全结束且无结果时显示，搜索进行中不显示 -->
-    <section v-else-if="searched && !searchState.loading && !searchState.deepLoading && !searchState.paused" class="empty-state">
+    <section v-else-if="searched && !searchState.loading && !searchState.deepLoading && !searchState.paused"
+      class="empty-state">
       <div class="empty-card">
         <div class="empty-icon">🔍</div>
         <h3>未找到相关资源</h3>
@@ -240,7 +221,7 @@ async function recordHotSearch(keyword: string) {
   if (!term) return;
   try {
     await $fetch(`${apiBase}/hot-searches`, { method: "POST", body: { term } });
-  } catch (_e) {}
+  } catch (_e) { }
 }
 
 // 执行实际搜索逻辑（供 requestUnlock 回调复用）
@@ -504,9 +485,17 @@ function visibleSorted(items: any[]) {
   animation: heroReveal 0.6s ease-out both;
 }
 
-.hero-feature:nth-child(1) { animation-delay: 0.28s; }
-.hero-feature:nth-child(2) { animation-delay: 0.34s; }
-.hero-feature:nth-child(3) { animation-delay: 0.4s; }
+.hero-feature:nth-child(1) {
+  animation-delay: 0.28s;
+}
+
+.hero-feature:nth-child(2) {
+  animation-delay: 0.34s;
+}
+
+.hero-feature:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 .hero-feature:hover {
   transform: translateY(-2px);
@@ -532,6 +521,7 @@ function visibleSorted(items: any[]) {
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -993,6 +983,7 @@ function visibleSorted(items: any[]) {
 
 /* 减少动画模式支持 */
 @media (prefers-reduced-motion: reduce) {
+
   .hero-badge,
   .hero-title,
   .hero-description,
